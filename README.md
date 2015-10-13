@@ -1,12 +1,12 @@
-* What?
+## What?
 
 This project implements a Token-based authentication service using JWT (RFC 7519). It uses the jose4j JWT library.
 
-* Why?
+## Why?
 
 I wrote this code to familiarise myself with Scala, Play and GitHub.
 
-* How?
+## How?
 
 Build & run using SBT:
 > sbt run
