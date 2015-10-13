@@ -1,0 +1,19 @@
+@(result:Boolean, authToken:String, refreshToken:String)(implicit header: RequestHeader)
+<html>
+  <body>
+@if(result == true) {
+    <h1>Login Success! :)</h1>
+    <h2>Auth Token:</h2>
+    <textarea>
+@authToken
+    </textarea>
+    <h2>Refresh Token:</h2>
+    <textarea>
+@refreshToken
+    </textarea>
+} else {
+    <h1>Login Failed :( </h1>
+}
+  </body>
+<html>
+

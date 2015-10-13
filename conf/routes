@@ -1,0 +1,3 @@
+GET    /login/:userid/:password     uk.co.tkeetch.sso.controllers.Auth.login(userid,password)
+GET    /refresh/:userid/:token      uk.co.tkeetch.sso.controllers.Auth.refresh(userid,token)
+
