@@ -1,19 +1,18 @@
 package uk.co.tkeetch.sso
 
-import java.lang.String
 import org.jose4j._
 import org.jose4j.jwk._
 import org.jose4j.jwt._
 import org.jose4j.jws._
 import org.jose4j.jwt.consumer._
 
-object AuthToken {
+object AuthTokenProvider {
 
   val privateSigningKey = RsaJwkGenerator.generateJwk(2048)
   val jwtConsumer = new JwtConsumerBuilder().setRequireExpirationTime().setVerificationKey(privateSigningKey.getKey()).build()
 
 
-  private[AuthToken] def internalGetUserToken (username:String):JwtClaims = {
+  private def internalGetUserToken (username:String):JwtClaims = {
     val claims = new JwtClaims()
     claims.setSubject(username)
     claims.setExpirationTimeMinutesInTheFuture(1)
@@ -21,7 +20,7 @@ object AuthToken {
     claims
   }
 
-  private[AuthToken] def signToken(claims:JwtClaims):String = {
+  private def signToken(claims:JwtClaims):String = {
     val jws = new JsonWebSignature();
     jws.setPayload(claims.toJson());
     jws.setKey(privateSigningKey.getPrivateKey());
@@ -29,12 +28,13 @@ object AuthToken {
     jws.getCompactSerialization();
   }
 
-  def getAuthToken(username:String):String = {
+  def getAuthToken(username:String, csrfToken:String):String = {
     val claims = internalGetUserToken(username)
     claims.setExpirationTimeMinutesInTheFuture(20)
     claims.setGeneratedJwtId()
     claims.setClaim("TokenType","Auth")
     claims.setClaim("AuthLevel","Authenticated")
+    claims.setClaim("CsrfToken",csrfToken)
     signToken(claims)
   }
 
@@ -59,7 +59,6 @@ object AuthToken {
     val claims = parseToken(token)
     (claims.getSubject == username && claims.getClaimValue("TokenType") == "Refresh")
   }
-
-
-
 }
+
+

@@ -1,36 +1,42 @@
 package uk.co.tkeetch.sso.controllers
 
 import play.api.mvc._
-import uk.co.tkeetch.sso.AuthToken
-
-abstract class Authenticator
-{
-  def authenticate(userid:String, password:String):Boolean
-}
-
-object PasswordAuthenticator extends Authenticator
-{
-  def authenticate(userid:String, password:String):Boolean = (userid == "tom" && password == "tom")
-}
-
-object RefreshTokenAuthenticator extends Authenticator
-{
-  def authenticate(userid:String, token:String):Boolean = AuthToken.isValidRefreshTokenForUser(userid,token)
-}
-
+import play.api.http._
+import play.api.libs.json._
+import uk.co.tkeetch.sso._
+import uk.co.tkeetch.sso.controllers._
+import uk.co.tkeetch.sso.controllers.authenticators._
+import uk.co.tkeetch.sso.data._
 
 class Auth extends Controller 
 {
-  val loginAuth = PasswordAuthenticator
-  val refreshAuth = RefreshTokenAuthenticator
+  val loginAuthenticator = PasswordAuthenticator
+  val refreshAuthenticator = RefreshTokenAuthenticator
 
-  def authenticate(authenticator:Authenticator, userid:String, credential:String):Boolean = authenticator.authenticate(userid,credential)
+  def getLoginPage() = Action { implicit request => Ok("getLoginPage") }
 
-  def login(userid:String,password:String) = Action { implicit request =>
-    Ok(views.html.login(authenticate(loginAuth, userid, password), AuthToken.getAuthToken(userid), AuthToken.getRefreshToken(userid)))
+  def doAuth(auth:Authenticator, userid:String, credential:String) = {
+    auth.getResponse(userid, credential) match {
+      case Left(err)   => Unauthorized(err)
+      case Right(resp) => Ok(resp.toJson())
+    }
   }
 
-  def refresh(userid:String, token:String) = Action { implicit request =>
-    Ok(views.html.login(authenticate(refreshAuth, userid, token), AuthToken.getAuthToken(userid), AuthToken.getRefreshToken(userid)))
+  def doAuthJson(auth:Authenticator, request:JsValue) = {
+    val authResponse = for {
+      userid <- (request \ "userid").asOpt[JsString]
+      credential <- (request \ "credential").asOpt[JsString]
+    } yield doAuth(auth, userid.value, credential.value)
+
+    authResponse getOrElse BadRequest("Missing Parameters")
+  }
+
+  def doLoginJson() = Action(parse.json) { implicit request =>
+    doAuthJson(loginAuthenticator, request.body)
+  }
+
+  def doRefreshJson() = Action(parse.json) { implicit request =>
+    doAuthJson(refreshAuthenticator, request.body)
   }
 }
+
