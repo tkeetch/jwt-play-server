@@ -11,9 +11,8 @@ I wrote this code to familiarise myself with Scala, Play and GitHub.
 Build & run using SBT:
 > sbt run
 
-Login with test username and password:
-> http://localhost:9000/login/tom/tom
+By default the web app runs on port 9000. Visit http://localhost:9000/login to test the app. Default credentials are tom/tom.
 
-Get a fresh access token using the refresh token:
-> http://localhost:9000/refresh/tom/<refresh-token>
+The login is a POST /login.json with this JSON body (Content-Type: text/json):
+> { "userid":"tom", "credential":"tom" }
 
