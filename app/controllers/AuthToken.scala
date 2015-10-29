@@ -5,6 +5,7 @@ import org.jose4j.jwk._
 import org.jose4j.jwt._
 import org.jose4j.jws._
 import org.jose4j.jwt.consumer._
+import scala.util.{Try,Success,Failure}
 
 object AuthTokenProvider {
 
@@ -46,19 +47,20 @@ object AuthTokenProvider {
     signToken(claims) 
   }
 
-  def parseToken(token:String):JwtClaims = {
-      jwtConsumer.processToClaims(token)
+  def parseToken(token:String) = {
+    jwtConsumer.processToClaims(token)
   }
 
-  def isValidAuthTokenForUser(username:String, token:String):Boolean = {
-    val claims = parseToken(token)
-    (claims.getSubject == username && claims.getClaimValue("TokenType") == "Auth")
+  def tokenHasExpectedUserAndType(token:String, username:String, tokenType:String):Boolean = {
+    Try(parseToken(token)) match {
+      case Failure(_) => false
+      case Success(claims) => (claims.getSubject == username && claims.getClaimValue("TokenType") == tokenType)
+    }
   }
 
-  def isValidRefreshTokenForUser(username:String, token:String):Boolean = {
-    val claims = parseToken(token)
-    (claims.getSubject == username && claims.getClaimValue("TokenType") == "Refresh")
-  }
+  def isValidAuthTokenForUser(token:String, username:String) = tokenHasExpectedUserAndType(token, username, "Auth")
+
+  def isValidRefreshTokenForUser(token:String, username:String) = tokenHasExpectedUserAndType(token, username, "Refresh")
 }
 
 

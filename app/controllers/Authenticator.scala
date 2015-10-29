@@ -34,7 +34,7 @@ object PasswordAuthenticator extends Authenticator
 
 object RefreshTokenAuthenticator extends Authenticator
 {
-  def authenticate(userid:String, token:String):Boolean = AuthTokenProvider.isValidRefreshTokenForUser(userid,token)
+  def authenticate(userid:String, token:String):Boolean = AuthTokenProvider.isValidRefreshTokenForUser(token, userid)
 }
 
 
