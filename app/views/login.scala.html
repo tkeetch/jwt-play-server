@@ -1,19 +1,44 @@
-@(result:Boolean, authToken:String, refreshToken:String)(implicit header: RequestHeader)
+@()
 <html>
-  <body>
-@if(result == true) {
-    <h1>Login Success! :)</h1>
-    <h2>Auth Token:</h2>
-    <textarea>
-@authToken
-    </textarea>
-    <h2>Refresh Token:</h2>
-    <textarea>
-@refreshToken
-    </textarea>
-} else {
-    <h1>Login Failed :( </h1>
-}
-  </body>
-<html>
+<body>
+  <table  style="width:50%">
+    <tr>
+      <td>Username:</td>
+      <td><input type='text' id='userid' /></td>
+    </tr>
+    <tr>
+      <td>Password:</td>
+      <td><input type='password' id='password' autocomplete='off'/></td>
+    </tr>
+    <tr>
+      <td><button id='loginButton'>Login</button></td>
+    </tr>
+  </table>
+  <table style="width:50%">
+    <tr>
+      <td>Auth Token:</td>
+    </tr>
+    <tr>
+      <td><textarea id='authToken' rows='10' style='width:100%'> </textarea></td>
+    </tr>
+    <tr>
+      <td>Refresh Token:</td>
+    </tr>
+    <tr>
+      <td><textarea id='refreshToken' rows='8' style='width:100%'></textarea></td>
+    </tr>
+    <tr>
+      <td>CSRF Token:</td>
+    </tr>
+    <tr>
+      <td><input type='text' id='csrfToken' autocomplete='off'></td>
+    </tr>
+    <tr>
+      <td><button id='refreshButton'>Refresh</button></td>
+    </tr>
+  </table>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="@routes.Assets.at("javascript/login.js")"></script>
+</body>
+</html>
 

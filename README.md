@@ -4,15 +4,14 @@ This project implements a Token-based authentication service using JWT (RFC 7519
 
 ## Why?
 
-I wrote this code to familiarise myself with Scala, Play and GitHub.
+I wrote this code to familiarise myself with Scala, Play, jQuery and GitHub.
 
 ## How?
 
 Build & run using SBT:
 > sbt run
 
-By default the web app runs on port 9000. Visit http://localhost:9000/login to test the app. Default credentials are tom/tom.
+Visit http://localhost:9000/login for a single-page web application that consumes the service using AJAX and CORS. 
 
-The login is a POST /login.json with this JSON body (Content-Type: text/json):
-> { "userid":"tom", "credential":"tom" }
+Test valid credentials are tom/tom.
 

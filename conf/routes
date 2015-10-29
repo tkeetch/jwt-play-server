@@ -1,3 +1,5 @@
+GET     /assets/*file                controllers.Assets.at(path="/public", file) 
+
 GET     /login                       uk.co.tkeetch.sso.controllers.Auth.getLoginPage()
 
 OPTIONS /login.json                  uk.co.tkeetch.CorsController.okAllowAll()
