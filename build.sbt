@@ -11,6 +11,7 @@ scalaVersion := "2.11.7"
 routesGenerator := InjectedRoutesGenerator
 
 libraryDependencies += "org.bitbucket.b_c" % "jose4j" % "0.4.4"
+libraryDependencies += filters
  
 // Scala compiler options
 scalacOptions ++= Seq(

@@ -1,3 +1,8 @@
-GET    /login                       uk.co.tkeetch.sso.controllers.Auth.getLoginPage()
-POST   /login.json                  uk.co.tkeetch.sso.controllers.Auth.doLoginJson()
-POST   /refresh.json                uk.co.tkeetch.sso.controllers.Auth.doRefreshJson()
+GET     /login                       uk.co.tkeetch.sso.controllers.Auth.getLoginPage()
+
+OPTIONS /login.json                  uk.co.tkeetch.CorsController.okAllowAll()
+POST    /login.json                  uk.co.tkeetch.sso.controllers.Auth.doLoginJson()
+
+OPTIONS /refresh.json                uk.co.tkeetch.CorsController.okAllowAll()
+POST    /refresh.json                uk.co.tkeetch.sso.controllers.Auth.doRefreshJson()
+
