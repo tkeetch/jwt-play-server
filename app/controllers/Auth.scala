@@ -14,7 +14,9 @@ class Auth extends Controller
   val loginAuthenticator = PasswordAuthenticator
   val refreshAuthenticator = RefreshTokenAuthenticator
 
-  def getLoginPage() = Action { implicit request => Ok(views.html.login()) }
+  def getLoginPage() = Action { Ok(views.html.login()) }
+
+  def redirectToLoginPage() = Action { Redirect(routes.Auth.getLoginPage()) }
 
   def doAuth(auth:Authenticator, userid:String, credential:String):Result = {
     auth.getResponse(userid, credential) match {

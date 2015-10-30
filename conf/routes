@@ -8,3 +8,4 @@ POST    /login.json                  uk.co.tkeetch.sso.controllers.Auth.doLoginJ
 OPTIONS /refresh.json                uk.co.tkeetch.CorsController.okAllowAll()
 POST    /refresh.json                uk.co.tkeetch.sso.controllers.Auth.doRefreshJson()
 
+GET     /                            uk.co.tkeetch.sso.controllers.Auth.redirectToLoginPage() 
