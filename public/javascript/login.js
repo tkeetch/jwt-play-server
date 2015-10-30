@@ -13,13 +13,13 @@ function authServiceRequest(url, payload, onSuccess, onError) {
   })
 }
 
-function getAbsoluteUrl(action) {
-  return 'http://192.168.0.16:9000/' + action + '.json';
+function getRelativeUrl(action) {
+  return '/' + action + '.json';
 }
 
 function authenticate(path, userid, credential, onSuccess, onError) {
   authServiceRequest(
-    getAbsoluteUrl(path),
+    getRelativeUrl(path),
 	{ "userid": userid, "credential": credential },
     onSuccess,
 	onError);
