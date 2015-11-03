@@ -52,14 +52,6 @@ function refreshFailureCallback(responseData, textStatus, errorThrown) {
   loginFailure("Token Refresh Failed!");
 }
 
-function bytesArrayToString(bytes) {
-    var chars = [];
-    for(var i = 0, n = bytes.length; i < n;) {
-        chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
-    }
-    return String.fromCharCode.apply(null, chars);
-}
-
 function decodeToken(jwt) {
   var b64Claims = jwt.split('.')[1];
   if(b64Claims != undefined)
@@ -74,7 +66,6 @@ function decodeNewTokens() {
   $("#decodedAuthToken").val(decodeToken($("#authToken").val()))
   $("#decodedRefreshToken").val(decodeToken($("#refreshToken").val()))
 }
-
 
 function submitLoginOnClick() {
   authenticate('login',
