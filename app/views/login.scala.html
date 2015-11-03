@@ -12,26 +12,31 @@
     </tr>
     <tr>
       <td><button id='loginButton'>Login</button></td>
+      <td><div id="errorMsg"></div></td>
     </tr>
   </table>
-  <table style="width:50%">
+  <table style="width:100%">
     <tr>
       <td>Auth Token:</td>
+      <td>Decoded Auth Token:</td>
     </tr>
     <tr>
       <td><textarea id='authToken' rows='10' style='width:100%'> </textarea></td>
+      <td><textarea id='decodedAuthToken' rows='10' style='width:100%' readonly></textarea></td>
     </tr>
     <tr>
       <td>Refresh Token:</td>
+      <td>Decoded Refresh Token:</td>
     </tr>
     <tr>
       <td><textarea id='refreshToken' rows='8' style='width:100%'></textarea></td>
+      <td><textarea id='decodedRefreshToken' rows='8' style='width:100%' readonly></textarea></td>
     </tr>
     <tr>
       <td>CSRF Token:</td>
     </tr>
     <tr>
-      <td><input type='text' id='csrfToken' autocomplete='off'></td>
+      <td><textarea id='csrfToken' rows='1' style='width:50%'></textarea></td>
     </tr>
     <tr>
       <td><button id='refreshButton'>Refresh</button></td>

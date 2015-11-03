@@ -26,49 +26,78 @@ function authenticate(path, userid, credential, onSuccess, onError) {
 }
 
 function authenticationSuccessCallback(responseData, textStatus, jqXHR) {
+  $("#errorMsg").html("")
   $("#authToken").val(responseData.authToken);
   $("#refreshToken").val(responseData.refreshToken);
   $("#csrfToken").val(responseData.csrfToken);
+
+  decodeNewTokens();
 }
 
-function loginFailure() {
+function loginFailure(msg) {
+  $("#errorMsg").text(msg).css("color","red")
   $("#authToken").val("");
   $("#refreshToken").val("");
   $("#csrfToken").val("");
+  $("#decodedAuthToken").val("");
+  $("#decodedRefreshToken").val("");
+
 }
 
 function loginFailureCallback(responseData, textStatus, errorThrown) {
-  loginFailure();
-  alert('Login Failed :(');
+  loginFailure("Login Failed!");
 }
 
 function refreshFailureCallback(responseData, textStatus, errorThrown) {
-  loginFailure();
-  alert('Token Refresh Failed :(');
+  loginFailure("Token Refresh Failed!");
 }
 
-function submitLogin() {
+function bytesArrayToString(bytes) {
+    var chars = [];
+    for(var i = 0, n = bytes.length; i < n;) {
+        chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
+    }
+    return String.fromCharCode.apply(null, chars);
+}
+
+function decodeToken(jwt) {
+  var b64Claims = jwt.split('.')[1];
+  if(b64Claims != undefined)
+  {
+    var jsonClaims = atob( b64Claims );
+    return jsonClaims.replace(/\{/g, '\{\n  ').replace(/,"/g, ',\n  "').replace(/\}/g, '\n\}')
+  }
+  return '';
+}
+
+function decodeNewTokens() {
+  $("#decodedAuthToken").val(decodeToken($("#authToken").val()))
+  $("#decodedRefreshToken").val(decodeToken($("#refreshToken").val()))
+}
+
+
+function submitLoginOnClick() {
   authenticate('login',
                $("#userid").val(),
 			   $("#password").val(),
 			   authenticationSuccessCallback,
-			   loginFailureCallback)
+			   loginFailureCallback);
 }
 
-function submitRefresh() {
+function submitRefreshOnClick() {
   authenticate('refresh',
                $("#userid").val(),
 			   $("#refreshToken").val(),
 			   authenticationSuccessCallback,
-			   refreshFailureCallback)
+			   refreshFailureCallback);
 }
 
 function init() {
   //Register onClick Handler for Login
-  $("#loginButton").click(submitLogin)
+  $("#loginButton").click(submitLoginOnClick)
 
   //Register onClick Handler for Token Refresh
-  $("#refreshButton").click(submitRefresh)
+  $("#refreshButton").click(submitRefreshOnClick)
 }
 
 init()
