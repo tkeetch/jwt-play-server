@@ -1,7 +1,9 @@
 //JavaScript functions for /login
 "use strict";
 
-function authServiceRequest(url, payload, onSuccess, onError) {
+var AuthServiceClient = AuthServiceClient || {};
+
+AuthServiceClient.authServiceRequest = function(url, payload, onSuccess, onError) {
     $.ajax({
         type: 'POST',
         url: url,
@@ -14,86 +16,89 @@ function authServiceRequest(url, payload, onSuccess, onError) {
         success: onSuccess,
         error: onError
     });
-}
+};
 
-function getRelativeUrl(action) {
-    return ('/' + action + '.json');
-}
+AuthServiceClient.authenticate = function(action, userid, credential, onSuccess, onError) {
 
-function authenticate(path, userid, credential, onSuccess, onError) {
-    authServiceRequest(
-        getRelativeUrl(path), {
+    function getRelativeUrl(action) {
+        return ('/' + action + '.json');
+    }
+
+    AuthServiceClient.authServiceRequest(
+        getRelativeUrl(action),
+        {
             "userid": userid,
             "credential": credential
         },
         onSuccess,
         onError);
-}
+};
 
-function decodeToken(jwt) {
-    var b64Claims = jwt.split('.')[1];
+AuthServiceClient.decodeTokenClaims = function(jwtToken) {
+    var b64Claims = jwtToken.split('.')[1];
     if (b64Claims !== undefined) {
         var jsonClaims = atob(b64Claims);
         return jsonClaims.replace(/\{/g, '\{\n  ').replace(/,"/g, ',\n  "').replace(/\}/g, '\n\}');
     }
     return '';
-}
+};
 
-function decodeNewTokens() {
-    $("#decodedAuthToken").val(decodeToken($("#authToken").val()));
-    $("#decodedRefreshToken").val(decodeToken($("#refreshToken").val()));
-}
+$("document").ready(function() {
 
-function authenticationSuccessCallback(responseData) {
-    $("#errorMsg").html("");
-    $("#authToken").val(responseData.authToken);
-    $("#refreshToken").val(responseData.refreshToken);
-    $("#csrfToken").val(responseData.csrfToken);
+    function decodeNewTokens() {
+        var decodeToken = AuthServiceClient.decodeTokenClaims;
+        var b64AuthToken = $("#authToken").val();
+        var b64RefreshToken = $("#refreshToken").val();
+        $("#decodedAuthToken").val(decodeToken(b64AuthToken));
+        $("#decodedRefreshToken").val(decodeToken(b64RefreshToken));
+    }
 
-    decodeNewTokens();
-}
+    function authenticationSuccessCallback(responseData) {
+        $("#errorMsg").html("");
+        $("#authToken").val(responseData.authToken);
+        $("#refreshToken").val(responseData.refreshToken);
+        $("#csrfToken").val(responseData.csrfToken);
 
-function loginFailure(msg) {
-    $("#errorMsg").text(msg).css("color", "red");
-    $("#authToken").val("");
-    $("#refreshToken").val("");
-    $("#csrfToken").val("");
-    $("#decodedAuthToken").val("");
-    $("#decodedRefreshToken").val("");
-}
+        decodeNewTokens();
+    }
 
-function loginFailureCallback() {
-    loginFailure("Login Failed!");
-}
+    function loginFailure(msg) {
+        $("#errorMsg").text(msg).css("color", "red");
+        $("#authToken").val("");
+        $("#refreshToken").val("");
+        $("#csrfToken").val("");
+        $("#decodedAuthToken").val("");
+        $("#decodedRefreshToken").val("");
+    }
 
-function refreshFailureCallback() {
-    loginFailure("Token Refresh Failed!");
-}
+    function loginFailureCallback() {
+        loginFailure("Login Failed!");
+    }
 
-function submitLoginOnClick() {
-    authenticate('login',
-        $("#userid").val(),
-        $("#password").val(),
-        authenticationSuccessCallback,
-        loginFailureCallback);
-}
+    function refreshFailureCallback() {
+        loginFailure("Token Refresh Failed!");
+    }
 
-function submitRefreshOnClick() {
-    authenticate('refresh',
-        $("#userid").val(),
-        $("#refreshToken").val(),
-        authenticationSuccessCallback,
-        refreshFailureCallback);
-}
+    function submitLoginOnClick() {
+        AuthServiceClient.authenticate('login',
+            $("#userid").val(),
+            $("#password").val(),
+            authenticationSuccessCallback,
+            loginFailureCallback);
+    }
 
-function init() {
+    function submitRefreshOnClick() {
+        AuthServiceClient.authenticate('refresh',
+            $("#userid").val(),
+            $("#refreshToken").val(),
+            authenticationSuccessCallback,
+            refreshFailureCallback);
+    }
+
     //Register onClick Handler for Login
     $("#loginButton").click(submitLoginOnClick);
 
     //Register onClick Handler for Token Refresh
     $("#refreshButton").click(submitRefreshOnClick);
-}
-
-init();
-
+});
 
