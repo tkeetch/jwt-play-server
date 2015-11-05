@@ -1,7 +1,6 @@
-{
-  "AWSTemplateFormatVersion" : "2010-09-09",
+TemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "AWS CloudFormation Template to launch the application with an instance of nginx in the same VM for HTTPS termination.",
+  "Description" : "AWS CloudFormation Template to build and launch the jwt-play-server application.",
 
   "Parameters" : {
     "KeyName": {
@@ -125,8 +124,8 @@
       "hs1.8xlarge" : { "Arch" : "NATHVM64"  },
       "cr1.8xlarge" : { "Arch" : "NATHVM64"  },
       "cc2.8xlarge" : { "Arch" : "NATHVM64"  }
-    }
-,
+    },
+
     "AWSRegionArch2AMI" : {
       "us-east-1"        : {"PV64" : "ami-5fb8c835", "HVM64" : "ami-60b6c60a", "HVMG2" : "ami-e998ea83"},
       "us-west-2"        : {"PV64" : "ami-d93622b8", "HVM64" : "ami-f0091d91", "HVMG2" : "ami-315f4850"},
@@ -167,7 +166,8 @@
                         "cp ./conf/nginx/test.key /etc/nginx/ssl/\n",
                         "service nginx configtest\n",
                         "service nginx start\n",
-                        "sbt run\n"
+                        "sbt stage\n",
+                        "./target/universal/stage/bin/jwt-play-server > /var/log/jwt-play-server.log 2>&1 &\n"
                 ]]
         }}
 
@@ -177,7 +177,7 @@
     "InstanceSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable SSH (port 22) and HTTPS (port 443)",
+        "GroupDescription" : "Enable required ports for jwt-play-server application (SSH and HTTPS)",
         "SecurityGroupIngress" : [ {
           "IpProtocol" : "tcp",
           "FromPort" : "22",
