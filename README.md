@@ -8,7 +8,7 @@ I wrote this code to familiarise myself with Scala, Play, jQuery, GitHub and Ama
 
 ## How?
 
-Launch the app using the supplied AWS CloudFormation template (./conf/cloudformation/jwt-play-server.template). The template runs the app in the free-tier by default and will compile the app for launch, which takes about 10-15 mins.
+Launch the app using the supplied AWS CloudFormation template (Download from https://raw.githubusercontent.com/tkeetch/jwt-play-server/master/conf/cloudformation/jwt-play-server.template). The template runs the app in the free-tier by default and will compile the app for launch, which takes about 10-15 mins.
 
 One the app has launched, visit the test page: https://<public_aws_ip>/. Until the app has launched, nginx will display an error. Plus, you will get a certificate error because of the use of a self-signed certificate.
 
