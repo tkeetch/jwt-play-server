@@ -4,13 +4,13 @@ version := "0.0.1"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 // Play provides two styles of routers, one expects its actions to be injected, the
 // other, legacy style, accesses its actions statically.
 routesGenerator := InjectedRoutesGenerator
 
-libraryDependencies += "org.bitbucket.b_c" % "jose4j" % "0.4.4"
+libraryDependencies += "org.bitbucket.b_c" % "jose4j" % "0.5.0"
 libraryDependencies += filters
  
 // Scala compiler options
