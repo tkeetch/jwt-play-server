@@ -1,6 +1,6 @@
 package uk.co.tkeetch.sso.data
 
-import play.api.libs.json._
+import scala.collection.immutable.Map
 
 class AuthenticatorResponse(nonce:String,
                             auth:String,
@@ -10,7 +10,7 @@ class AuthenticatorResponse(nonce:String,
   val authToken:String = auth
   val refreshToken:String = refresh
 
-  def toJson() = Json.obj(
+  def toMap() = Map(
     "csrfToken" -> csrfToken,
     "authToken" -> authToken,
     "refreshToken" -> refreshToken)
