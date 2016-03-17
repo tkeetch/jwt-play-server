@@ -3,7 +3,6 @@ package uk.co.tkeetch.sso.controllers
 import play.api.mvc._
 import play.api.http._
 import play.api.libs.json._
-import uk.co.tkeetch.Cors
 import uk.co.tkeetch.sso._
 import uk.co.tkeetch.sso.controllers._
 import uk.co.tkeetch.sso.controllers.authenticators._
@@ -35,11 +34,11 @@ class Auth extends Controller
   }
 
   def doLoginJson() = Action(parse.json) { implicit request =>
-    Cors.allowAll(doAuthJson(loginAuthenticator, request.body))
+    doAuthJson(loginAuthenticator, request.body)
   }
 
   def doRefreshJson() = Action(parse.json) { implicit request =>
-    Cors.allowAll(doAuthJson(refreshAuthenticator, request.body))
+    doAuthJson(refreshAuthenticator, request.body)
   }
 }
 
