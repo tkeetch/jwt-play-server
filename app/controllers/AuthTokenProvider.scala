@@ -5,6 +5,8 @@ import org.jose4j.jwk._
 import org.jose4j.jwt._
 import org.jose4j.jws._
 import org.jose4j.jwt.consumer._
+import scala.collection.immutable.Map
+import scala.collection.JavaConversions._
 import scala.util.{Try,Success,Failure}
 
 object AuthTokenProvider {
@@ -12,8 +14,13 @@ object AuthTokenProvider {
   val privateSigningKey = RsaJwkGenerator.generateJwk(2048)
   val jwtConsumer = new JwtConsumerBuilder().setRequireExpirationTime().setVerificationKey(privateSigningKey.getKey()).build()
 
+  def getPublicSigningKey():Map[String, String] = {
+    val publicKey = new RsaJsonWebKey(privateSigningKey.getRsaPublicKey());
+    val publicKeyMap:Map[String,Object] = publicKey.toParams(JsonWebKey.OutputControlLevel.PUBLIC_ONLY).toMap
+    publicKeyMap mapValues (_.toString())
+  }
 
-  private def internalGetUserToken (username:String):JwtClaims = {
+  private def internalGetUserToken(username:String):JwtClaims = {
     val claims = new JwtClaims()
     claims.setSubject(username)
     claims.setExpirationTimeMinutesInTheFuture(1)
@@ -22,11 +29,11 @@ object AuthTokenProvider {
   }
 
   private def signToken(claims:JwtClaims):String = {
-    val jws = new JsonWebSignature();
-    jws.setPayload(claims.toJson());
-    jws.setKey(privateSigningKey.getPrivateKey());
-    jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
-    jws.getCompactSerialization();
+    val jws = new JsonWebSignature()
+    jws.setPayload(claims.toJson())
+    jws.setKey(privateSigningKey.getPrivateKey())
+    jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256)
+    jws.getCompactSerialization()
   }
 
   def getAuthToken(username:String, csrfToken:String):String = {

@@ -40,5 +40,9 @@ class Auth extends Controller
   def doRefreshJson() = Action(parse.json) { implicit request =>
     doAuthJson(refreshAuthenticator, request.body)
   }
+
+  def getPublicSigningKey() = Action { implicit request =>
+    Ok(Json.toJson(AuthTokenProvider.getPublicSigningKey()))
+  }
 }
 

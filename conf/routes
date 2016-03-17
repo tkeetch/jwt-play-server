@@ -2,5 +2,6 @@ GET     /assets/*file                controllers.Assets.at(path="/public", file)
 GET     /login                       uk.co.tkeetch.sso.controllers.Auth.getLoginPage()
 POST    /login.json                  uk.co.tkeetch.sso.controllers.Auth.doLoginJson()
 POST    /refresh.json                uk.co.tkeetch.sso.controllers.Auth.doRefreshJson()
+GET     /publicKey.json              uk.co.tkeetch.sso.controllers.Auth.getPublicSigningKey()
 GET     /                            uk.co.tkeetch.sso.controllers.Auth.redirectToLoginPage()
  
