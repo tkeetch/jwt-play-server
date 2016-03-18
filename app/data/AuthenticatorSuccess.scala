@@ -2,9 +2,9 @@ package uk.co.tkeetch.sso.data
 
 import scala.collection.immutable.Map
 
-class AuthenticatorResponse(nonce:String,
-                            auth:String,
-                            refresh:String)
+class AuthenticatorSuccess(nonce:String,
+                           auth:String,
+                           refresh:String)
 {
   val csrfToken:String = nonce
   val authToken:String = auth

@@ -16,11 +16,11 @@ abstract class Authenticator
     randomBytes.map("%02X".format(_)).mkString
   }
 
-  def getResponse(userid:String, credential:String):Either[String, AuthenticatorResponse] = {
+  def getResponse(userid:String, credential:String):Either[AuthenticatorError, AuthenticatorSuccess] = {
     lazy val nonce = getNonce()
     authenticate(userid,credential) match {
-      case false => Left("Authentication Failed!")
-      case true  => Right( new AuthenticatorResponse(nonce,
+      case false => Left( new AuthenticatorError("Authentication Failed!"))
+      case true  => Right( new AuthenticatorSuccess(nonce,
                                                      AuthTokenProvider.getAuthToken(userid, nonce),
                                                      AuthTokenProvider.getRefreshToken(userid)) )
     }

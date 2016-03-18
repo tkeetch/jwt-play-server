@@ -19,7 +19,7 @@ class Auth extends Controller
 
   def doAuth(auth:Authenticator, userid:String, credential:String):Result = {
     auth.getResponse(userid, credential) match {
-      case Left(err)   => Unauthorized(err)
+      case Left(err)   => Unauthorized(Json.toJson(err.toMap()))
       case Right(resp) => Ok(Json.toJson(resp.toMap()))
     }
   }
