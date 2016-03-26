@@ -1,16 +1,22 @@
 package uk.co.tkeetch.sso.controllers
 
+import javax.inject._
+import play.api.Configuration
+
 import play.api.mvc._
 import play.api.http._
 import play.api.libs.json._
+import play.api.Configuration
 import uk.co.tkeetch.sso._
 import uk.co.tkeetch.sso.controllers._
 import uk.co.tkeetch.sso.controllers.authenticators._
 import uk.co.tkeetch.sso.data._
 
-class Auth extends Controller 
+class Auth @Inject() (config:Configuration) extends Controller 
 {
-  val loginAuthenticator = PasswordAuthenticator
+  val userConfig = config.getConfig("users").getOrElse(Configuration.empty)
+  val loginAuthenticator = new PasswordAuthenticator(userConfig)
+
   val refreshAuthenticator = RefreshTokenAuthenticator
 
   def getLoginPage() = Action { Ok(views.html.login()) }

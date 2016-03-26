@@ -1,6 +1,7 @@
 package uk.co.tkeetch.sso.controllers.authenticators
 
 import java.security.SecureRandom
+import play.api.Configuration
 import uk.co.tkeetch.sso.data._
 import uk.co.tkeetch.sso.AuthTokenProvider
 
@@ -27,9 +28,16 @@ abstract class Authenticator
   }
 }
 
-object PasswordAuthenticator extends Authenticator
+class PasswordAuthenticator(users:Configuration) extends Authenticator
 {
-  def authenticate(userid:String, password:String):Boolean = (userid == "tom" && password == "tom")
+  def comparePasswords(p1:String, p2:String):Boolean = p1.equals(p2)
+
+  def authenticate(userid:String, password:String):Boolean = {
+    users.getString(userid) match {
+      case Some(p) => comparePasswords(password, p)
+      case _ => println("User not found: " + userid); false 
+    }
+  }
 }
 
 object RefreshTokenAuthenticator extends Authenticator
