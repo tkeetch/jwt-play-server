@@ -6,9 +6,7 @@ import play.api.Configuration
 import play.api.mvc._
 import play.api.http._
 import play.api.libs.json._
-import play.api.Configuration
 import uk.co.tkeetch.sso._
-import uk.co.tkeetch.sso.controllers._
 import uk.co.tkeetch.sso.controllers.authenticators._
 import uk.co.tkeetch.sso.data._
 
