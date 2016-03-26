@@ -5,7 +5,7 @@ import play.api.Configuration
 import uk.co.tkeetch.sso.data._
 import uk.co.tkeetch.sso.AuthTokenProvider
 
-abstract class Authenticator
+abstract class Authenticator(authTokenProvider:AuthTokenProvider)
 {
   def authenticate(userid:String, credential:String):Boolean
 
@@ -22,14 +22,16 @@ abstract class Authenticator
     authenticate(userid,credential) match {
       case false => Left( new AuthenticatorError("Authentication Failed!"))
       case true  => Right( new AuthenticatorSuccess(nonce,
-                                                     AuthTokenProvider.getAuthToken(userid, nonce),
-                                                     AuthTokenProvider.getRefreshToken(userid)) )
+                                                     authTokenProvider.getAuthToken(userid, nonce),
+                                                     authTokenProvider.getRefreshToken(userid)) )
     }
   }
 }
 
-class PasswordAuthenticator(users:Configuration) extends Authenticator
+class PasswordAuthenticator(authTokenProvider:AuthTokenProvider, userConfig:Option[Configuration]) extends Authenticator(authTokenProvider)
 {
+  val users = userConfig.getOrElse(Configuration.empty)
+
   def comparePasswords(p1:String, p2:String):Boolean = p1.equals(p2)
 
   def authenticate(userid:String, password:String):Boolean = {
@@ -40,9 +42,9 @@ class PasswordAuthenticator(users:Configuration) extends Authenticator
   }
 }
 
-object RefreshTokenAuthenticator extends Authenticator
+class RefreshTokenAuthenticator(authTokenProvider:AuthTokenProvider) extends Authenticator(authTokenProvider)
 {
-  def authenticate(userid:String, token:String):Boolean = AuthTokenProvider.isValidRefreshTokenForUser(token, userid)
+  def authenticate(userid:String, token:String):Boolean = authTokenProvider.isValidRefreshTokenForUser(token, userid)
 }
 
 

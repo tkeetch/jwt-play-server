@@ -1,4 +1,4 @@
-reated by http://www.gitignore.io
+created by http://www.gitignore.io
 
 ### Scala ###
 *.class
@@ -18,4 +18,7 @@ project/plugins/project/
 # Scala-IDE specific
 .scala_dependencies
 .worksheet
+
+# App Specific
+privateKey.conf
 

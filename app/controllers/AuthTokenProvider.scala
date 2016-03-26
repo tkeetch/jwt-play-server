@@ -1,5 +1,7 @@
 package uk.co.tkeetch.sso
 
+import play.api.Configuration
+
 import org.jose4j._
 import org.jose4j.jwk._
 import org.jose4j.jwt._
@@ -9,16 +11,25 @@ import scala.collection.immutable.Map
 import scala.collection.JavaConversions._
 import scala.util.{Try,Success,Failure}
 
-object AuthTokenProvider {
+import org.jose4j.json.JsonUtil
+import org.jose4j.base64url.Base64Url
+import java.nio.charset.StandardCharsets
 
-  val privateSigningKey = RsaJwkGenerator.generateJwk(2048)
+class AuthTokenProvider (tokenProviderConfig:Option[Configuration]) {
+
+  def LoadOrGeneratePrivateSigningKey():RsaJsonWebKey = {
+    tokenProviderConfig.flatMap(_.getString("privateKey")) match {
+      case Some(jwkJson) => new RsaJsonWebKey(JsonUtil.parseJson(new String(Base64Url.decode(jwkJson)))) 
+      case None => RsaJwkGenerator.generateJwk(2048)
+    }
+  }
+
+  val privateSigningKey:RsaJsonWebKey = LoadOrGeneratePrivateSigningKey()
   val jwtConsumer = new JwtConsumerBuilder().setRequireExpirationTime().setVerificationKey(privateSigningKey.getKey()).build()
 
-  def getPublicSigningKey():Map[String, String] = {
-    val publicKey = new RsaJsonWebKey(privateSigningKey.getRsaPublicKey());
-    val publicKeyMap:Map[String,Object] = publicKey.toParams(JsonWebKey.OutputControlLevel.PUBLIC_ONLY).toMap
-    publicKeyMap mapValues (_.toString())
-  }
+  def getPublicSigningKeyJson():String = privateSigningKey.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY)
+  def getPrivateSigningKeyJson():String = privateSigningKey.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE)
+  def getPrivateSigningKeyJsonB64():String = Base64Url.encode(getPrivateSigningKeyJson().getBytes(StandardCharsets.UTF_8))
 
   private def internalGetUserToken(username:String):JwtClaims = {
     val claims = new JwtClaims()
@@ -31,7 +42,7 @@ object AuthTokenProvider {
   private def signToken(claims:JwtClaims):String = {
     val jws = new JsonWebSignature()
     jws.setPayload(claims.toJson())
-    jws.setKey(privateSigningKey.getPrivateKey())
+    jws.setKey(privateSigningKey.getRsaPrivateKey())
     jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256)
     jws.getCompactSerialization()
   }
@@ -69,5 +80,8 @@ object AuthTokenProvider {
 
   def isValidRefreshTokenForUser(token:String, username:String) = tokenHasExpectedUserAndType(token, username, "Refresh")
 }
+
+
+
 
 

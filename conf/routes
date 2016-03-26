@@ -3,5 +3,6 @@ GET     /login                       uk.co.tkeetch.sso.controllers.Auth.getLogin
 POST    /login.json                  uk.co.tkeetch.sso.controllers.Auth.doLoginJson()
 POST    /refresh.json                uk.co.tkeetch.sso.controllers.Auth.doRefreshJson()
 GET     /publicKey.json              uk.co.tkeetch.sso.controllers.Auth.getPublicSigningKey()
+GET     /privateKey.json             uk.co.tkeetch.sso.controllers.Auth.getPrivateSigningKey()
 GET     /                            uk.co.tkeetch.sso.controllers.Auth.redirectToLoginPage()
  

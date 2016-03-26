@@ -7,15 +7,15 @@ import play.api.mvc._
 import play.api.http._
 import play.api.libs.json._
 import uk.co.tkeetch.sso._
+import uk.co.tkeetch.sso.AuthTokenProvider
 import uk.co.tkeetch.sso.controllers.authenticators._
 import uk.co.tkeetch.sso.data._
 
 class Auth @Inject() (config:Configuration) extends Controller 
 {
-  val userConfig = config.getConfig("users").getOrElse(Configuration.empty)
-  val loginAuthenticator = new PasswordAuthenticator(userConfig)
-
-  val refreshAuthenticator = RefreshTokenAuthenticator
+  val authTokenProvider = new AuthTokenProvider(config.getConfig("sso.authtoken"))
+  val loginAuthenticator = new PasswordAuthenticator(authTokenProvider, config.getConfig("sso.users"))
+  val refreshAuthenticator = new RefreshTokenAuthenticator(authTokenProvider)
 
   def getLoginPage() = Action { Ok(views.html.login()) }
 
@@ -46,7 +46,12 @@ class Auth @Inject() (config:Configuration) extends Controller
   }
 
   def getPublicSigningKey() = Action { implicit request =>
-    Ok(Json.toJson(AuthTokenProvider.getPublicSigningKey()))
+    Ok(authTokenProvider.getPublicSigningKeyJson())
+  }
+
+  def getPrivateSigningKey() = Action { implicit request =>
+    println("Private Signing Key Config: " + authTokenProvider.getPrivateSigningKeyJsonB64())
+    Forbidden(Json.toJson(Map("msg" -> "The private key is displayed on the application console.")))
   }
 }
 
