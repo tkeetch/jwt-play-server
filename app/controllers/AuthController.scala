@@ -37,11 +37,11 @@ class Auth @Inject() (config:Configuration) extends Controller
     authResponse getOrElse BadRequest("Missing Parameters")
   }
 
-  def doLoginJson() = Action(parse.json) { implicit request =>
+  def postLoginJson() = Action(parse.json) { implicit request =>
     doAuthJson(loginAuthenticator, request.body)
   }
 
-  def doRefreshJson() = Action(parse.json) { implicit request =>
+  def postRefreshJson() = Action(parse.json) { implicit request =>
     doAuthJson(refreshAuthenticator, request.body)
   }
 
