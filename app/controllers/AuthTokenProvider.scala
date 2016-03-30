@@ -17,15 +17,15 @@ import java.nio.charset.StandardCharsets
 
 class AuthTokenProvider (tokenProviderConfig:Option[Configuration]) {
 
-  def LoadOrGeneratePrivateSigningKey():RsaJsonWebKey = {
+  private def LoadOrGeneratePrivateSigningKey():RsaJsonWebKey = {
     tokenProviderConfig.flatMap(_.getString("privateKey")) match {
       case Some(jwkJson) => new RsaJsonWebKey(JsonUtil.parseJson(new String(Base64Url.decode(jwkJson)))) 
       case None => RsaJwkGenerator.generateJwk(2048)
     }
   }
 
-  val privateSigningKey:RsaJsonWebKey = LoadOrGeneratePrivateSigningKey()
-  val jwtConsumer = new JwtConsumerBuilder().setRequireExpirationTime().setVerificationKey(privateSigningKey.getKey()).build()
+  private val privateSigningKey:RsaJsonWebKey = LoadOrGeneratePrivateSigningKey()
+  private val jwtConsumer = new JwtConsumerBuilder().setRequireExpirationTime().setVerificationKey(privateSigningKey.getKey()).build()
 
   def getPublicSigningKeyJson():String = privateSigningKey.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY)
   def getPrivateSigningKeyJson():String = privateSigningKey.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE)
@@ -65,11 +65,11 @@ class AuthTokenProvider (tokenProviderConfig:Option[Configuration]) {
     signToken(claims) 
   }
 
-  def parseToken(token:String) = {
+  private def parseToken(token:String) = {
     jwtConsumer.processToClaims(token)
   }
 
-  def tokenHasExpectedUserAndType(token:String, username:String, tokenType:String):Boolean = {
+  private def tokenHasExpectedUserAndType(token:String, username:String, tokenType:String):Boolean = {
     Try(parseToken(token)) match {
       case Failure(_) => false
       case Success(claims) => (claims.getSubject == username && claims.getClaimValue("TokenType") == tokenType)

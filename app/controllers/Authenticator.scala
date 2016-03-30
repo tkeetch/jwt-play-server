@@ -9,9 +9,9 @@ abstract class Authenticator(authTokenProvider:AuthTokenProvider)
 {
   def authenticate(userid:String, credential:String):Boolean
 
-  def prng = new SecureRandom()
+  protected def prng = new SecureRandom()
 
-  def getNonce() = {
+  protected def getNonce() = {
     val randomBytes = new Array[Byte](20)
     val unit = prng.nextBytes(randomBytes)
     randomBytes.map("%02X".format(_)).mkString
@@ -30,9 +30,9 @@ abstract class Authenticator(authTokenProvider:AuthTokenProvider)
 
 class PasswordAuthenticator(authTokenProvider:AuthTokenProvider, userConfig:Option[Configuration]) extends Authenticator(authTokenProvider)
 {
-  val users = userConfig.getOrElse(Configuration.empty)
+  private val users = userConfig.getOrElse(Configuration.empty)
 
-  def comparePasswords(p1:String, p2:String):Boolean = p1.equals(p2)
+  protected def comparePasswords(p1:String, p2:String):Boolean = p1.equals(p2)
 
   def authenticate(userid:String, password:String):Boolean = {
     users.getString(userid) match {
@@ -44,7 +44,9 @@ class PasswordAuthenticator(authTokenProvider:AuthTokenProvider, userConfig:Opti
 
 class RefreshTokenAuthenticator(authTokenProvider:AuthTokenProvider) extends Authenticator(authTokenProvider)
 {
-  def authenticate(userid:String, token:String):Boolean = authTokenProvider.isValidRefreshTokenForUser(token, userid)
+  def authenticate(userid:String, token:String):Boolean = {
+    authTokenProvider.isValidRefreshTokenForUser(token, userid)
+  }
 }
 
 
