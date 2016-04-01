@@ -11,10 +11,9 @@ class UserAuthTokenProvider(authTokenProvider:AuthTokenProvider, subject:String)
   private lazy val jti:String = authTokenProvider.generateJti()
 
   private lazy val baseUserToken:Map[String,Any] = Map(
-	"jti"  -> jti,
-	"sub"  -> subject,
-	"iat"  -> timestamp,
-	"crit" -> "tt") 
+	JwtToken.CLAIM_JWT_ID_KEY -> jti,
+	JwtToken.CLAIM_SUBJECT_KEY -> subject,
+	JwtToken.CLAIM_ISSUED_AT_KEY -> timestamp) 
 
   def signToken(token:Map[String,Object]) = authTokenProvider.signToken(token)
 
@@ -22,29 +21,31 @@ class UserAuthTokenProvider(authTokenProvider:AuthTokenProvider, subject:String)
 
   private def authToken = {
     val authTokenClaims:Map[String,Any] = Map(
-      "tt"   -> "Auth",
-      "exp"  -> (timestamp + (config.getInt("auth.lifespan").getOrElse(10) * 60)),
-      "csrf" -> csrfToken)
+      JwtToken.CLAIM_TOKEN_TYPE_KEY -> JwtToken.TOKEN_TYPE_AUTHENTICATION,
+      JwtToken.CLAIM_EXPIRATION_TIME_KEY -> (timestamp + (config.getInt("auth.lifespan").getOrElse(10) * 60)),
+      JwtToken.CLAIM_CSRF_TOKEN_KEY -> csrfToken)
     (baseUserToken ++ authTokenClaims)
   }
 
   private def refreshToken = {
     val refreshTokenClaims:Map[String,Any] = Map(
-      "tt"  -> "Refresh",
-      "exp" -> (timestamp + (config.getInt("refresh.lifespan").getOrElse(365*24*60) * 60)))
+      JwtToken.CLAIM_TOKEN_TYPE_KEY -> JwtToken.TOKEN_TYPE_REFRESH,
+      JwtToken.CLAIM_EXPIRATION_TIME_KEY -> (timestamp + (config.getInt("refresh.lifespan").getOrElse(365*24*60) * 60)))
     (baseUserToken ++ refreshTokenClaims)
   }
 
   def tokenSet = new TokenSet(csrfToken, authToken, refreshToken)
 
   private def tokenHasExpectedContents(token:String,tokenType:String):Boolean = {
-    val expected = Map("tt" -> tokenType,"sub" -> subject)
+    val expected = Map(
+      JwtToken.CLAIM_TOKEN_TYPE_KEY -> tokenType,
+      JwtToken.CLAIM_SUBJECT_KEY  -> subject)
     authTokenProvider.parseToken(token).filterKeys(expected.keySet.contains(_)).equals(expected)
   }
 
-  def isValidAuthToken(token:String):Boolean = tokenHasExpectedContents(token, "Auth")
+  def isValidAuthToken(token:String):Boolean = tokenHasExpectedContents(token, JwtToken.TOKEN_TYPE_AUTHENTICATION)
 
-  def isValidRefreshToken(token:String):Boolean = tokenHasExpectedContents(token, "Refresh")
+  def isValidRefreshToken(token:String):Boolean = tokenHasExpectedContents(token, JwtToken.TOKEN_TYPE_REFRESH)
 }
 
 
