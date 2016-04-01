@@ -6,13 +6,13 @@ import play.api.Configuration
 import play.api.mvc._
 import play.api.http._
 import play.api.libs.json._
-import uk.co.tkeetch.sso.AuthTokenProvider
-import uk.co.tkeetch.sso.controllers.authenticators._
 import uk.co.tkeetch.sso.data._
+import uk.co.tkeetch.sso.tokens._
+import uk.co.tkeetch.sso.authenticators._
 
 class Auth @Inject() (config:Configuration) extends Controller 
 {
-  private val authTokenProvider = new AuthTokenProvider(config.getConfig("sso.authtoken"))
+  private val authTokenProvider = new AuthTokenProvider(config.getConfig("sso.tokens"))
   private val loginAuthenticator = new PasswordAuthenticator(authTokenProvider, config.getConfig("sso.users"))
   private val refreshAuthenticator = new RefreshTokenAuthenticator(authTokenProvider)
 

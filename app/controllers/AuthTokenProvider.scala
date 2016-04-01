@@ -1,87 +1,41 @@
-package uk.co.tkeetch.sso
+package uk.co.tkeetch.sso.tokens
 
 import play.api.Configuration
-
-import org.jose4j._
-import org.jose4j.jwk._
-import org.jose4j.jwt._
-import org.jose4j.jws._
-import org.jose4j.jwt.consumer._
-import scala.collection.immutable.Map
-import scala.collection.JavaConversions._
-import scala.util.{Try,Success,Failure}
-
-import org.jose4j.json.JsonUtil
-import org.jose4j.base64url.Base64Url
-import java.nio.charset.StandardCharsets
+import java.security.SecureRandom
 
 class AuthTokenProvider (tokenProviderConfig:Option[Configuration]) {
 
-  private def LoadOrGeneratePrivateSigningKey():RsaJsonWebKey = {
-    tokenProviderConfig.flatMap(_.getString("privateKey")) match {
-      case Some(jwkJson) => new RsaJsonWebKey(JsonUtil.parseJson(new String(Base64Url.decode(jwkJson)))) 
-      case None => RsaJwkGenerator.generateJwk(2048)
-    }
+  val config = tokenProviderConfig getOrElse Configuration.empty
+  private val authTokenLifespanMinutes = config.getInt("token.lifespan").getOrElse(10)
+
+  private val privateSigningKey = {
+    Jose4j.newRsaJsonWebKey(config.getString("privateKey"))
+  }
+ 
+  private lazy val jwtConsumer = Jose4j.newJwtConsumer(privateSigningKey)
+
+  def getPublicSigningKeyJson() = Jose4j.publicJsonWebKeyToJson(privateSigningKey)
+
+  def getPrivateSigningKeyJsonB64() = Jose4j.base64Encode(Jose4j.privateJsonWebKeyToJson(privateSigningKey))
+
+  def parseToken(token:String):Map[String,Any] = Jose4j.parseToken(jwtConsumer, token)
+
+  def signToken(token:Map[String,Any]):String = Jose4j.signToken(privateSigningKey, token) 
+
+  protected def prng = new SecureRandom()
+
+  protected def getRandomString(byteLen:Integer):String = {
+    val bytes:Integer = if (byteLen <= 0) 20 else byteLen
+    val randomBytes = new Array[Byte](bytes)
+    val unit = prng.nextBytes(randomBytes)
+    randomBytes.map("%02X".format(_)).mkString
   }
 
-  private val privateSigningKey:RsaJsonWebKey = LoadOrGeneratePrivateSigningKey()
-  private val jwtConsumer = new JwtConsumerBuilder().setRequireExpirationTime().setVerificationKey(privateSigningKey.getKey()).build()
+  def authTokenLifespanInSeconds:Long = (authTokenLifespanMinutes * 60)
 
-  def getPublicSigningKeyJson():String = privateSigningKey.toJson(JsonWebKey.OutputControlLevel.PUBLIC_ONLY)
-  def getPrivateSigningKeyJson():String = privateSigningKey.toJson(JsonWebKey.OutputControlLevel.INCLUDE_PRIVATE)
-  def getPrivateSigningKeyJsonB64():String = Base64Url.encode(getPrivateSigningKeyJson().getBytes(StandardCharsets.UTF_8))
+  def generateJti():String = getRandomString(10)
 
-  private def internalGetUserToken(username:String):JwtClaims = {
-    val claims = new JwtClaims()
-    claims.setSubject(username)
-    claims.setExpirationTimeMinutesInTheFuture(1)
-    claims.setIssuedAtToNow()
-    claims
-  }
+  def generateCsrfToken():String = getRandomString(10)
 
-  private def signToken(claims:JwtClaims):String = {
-    val jws = new JsonWebSignature()
-    jws.setPayload(claims.toJson())
-    jws.setKey(privateSigningKey.getRsaPrivateKey())
-    jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256)
-    jws.getCompactSerialization()
-  }
-
-  def getAuthToken(username:String, csrfToken:String):String = {
-    val claims = internalGetUserToken(username)
-    claims.setExpirationTimeMinutesInTheFuture(20)
-    claims.setGeneratedJwtId()
-    claims.setClaim("TokenType","Auth")
-    claims.setClaim("AuthLevel","Authenticated")
-    claims.setClaim("CsrfToken",csrfToken)
-    signToken(claims)
-  }
-
-  def getRefreshToken(username:String):String = {
-    val claims = internalGetUserToken(username)
-    claims.setExpirationTimeMinutesInTheFuture(10000)
-    claims.setGeneratedJwtId()
-    claims.setClaim("TokenType","Refresh")
-    signToken(claims) 
-  }
-
-  private def parseToken(token:String) = {
-    jwtConsumer.processToClaims(token)
-  }
-
-  private def tokenHasExpectedUserAndType(token:String, username:String, tokenType:String):Boolean = {
-    Try(parseToken(token)) match {
-      case Failure(_) => false
-      case Success(claims) => (claims.getSubject == username && claims.getClaimValue("TokenType") == tokenType)
-    }
-  }
-
-  def isValidAuthTokenForUser(token:String, username:String) = tokenHasExpectedUserAndType(token, username, "Auth")
-
-  def isValidRefreshTokenForUser(token:String, username:String) = tokenHasExpectedUserAndType(token, username, "Refresh")
 }
-
-
-
-
 

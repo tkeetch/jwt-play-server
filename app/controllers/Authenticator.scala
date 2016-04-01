@@ -1,29 +1,23 @@
-package uk.co.tkeetch.sso.controllers.authenticators
+package uk.co.tkeetch.sso.authenticators
 
-import java.security.SecureRandom
 import play.api.Configuration
+
+import uk.co.tkeetch.sso._
 import uk.co.tkeetch.sso.data._
-import uk.co.tkeetch.sso.AuthTokenProvider
+import uk.co.tkeetch.sso.tokens._
 
 abstract class Authenticator(authTokenProvider:AuthTokenProvider)
 {
   def authenticate(userid:String, credential:String):Boolean
 
-  protected def prng = new SecureRandom()
-
-  protected def getNonce() = {
-    val randomBytes = new Array[Byte](20)
-    val unit = prng.nextBytes(randomBytes)
-    randomBytes.map("%02X".format(_)).mkString
-  }
-
   def getResponse(userid:String, credential:String):Either[AuthenticatorError, AuthenticatorSuccess] = {
-    lazy val nonce = getNonce()
+    lazy val tokens = (new UserAuthTokenProvider(authTokenProvider, userid)).tokenSet
+
     authenticate(userid,credential) match {
       case false => Left( new AuthenticatorError("Authentication Failed!"))
-      case true  => Right( new AuthenticatorSuccess(nonce,
-                                                     authTokenProvider.getAuthToken(userid, nonce),
-                                                     authTokenProvider.getRefreshToken(userid)) )
+      case true  => Right( new AuthenticatorSuccess(tokens.csrf,
+                                                    authTokenProvider.signToken(tokens.auth),
+                                                    authTokenProvider.signToken(tokens.refresh)))
     }
   }
 }
@@ -45,7 +39,14 @@ class PasswordAuthenticator(authTokenProvider:AuthTokenProvider, userConfig:Opti
 class RefreshTokenAuthenticator(authTokenProvider:AuthTokenProvider) extends Authenticator(authTokenProvider)
 {
   def authenticate(userid:String, token:String):Boolean = {
-    authTokenProvider.isValidRefreshTokenForUser(token, userid)
+    (new UserAuthTokenProvider(authTokenProvider, userid)).isValidRefreshToken(token)
+  }
+}
+
+class AuthTokenAuthenticator(authTokenProvider:AuthTokenProvider) extends Authenticator(authTokenProvider)
+{
+  def authenticate(userid:String, token:String):Boolean = {
+    (new UserAuthTokenProvider(authTokenProvider, userid)).isValidAuthToken(token)
   }
 }
 
