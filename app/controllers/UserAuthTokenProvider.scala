@@ -9,15 +9,12 @@ class UserAuthTokenProvider(authTokenProvider:AuthTokenProvider, subject:String)
 
   private lazy val timestamp:Long = System.currentTimeMillis / 1000
   private lazy val jti:String = authTokenProvider.generateJti()
+  private lazy val csrfToken:String = authTokenProvider.generateCsrfToken()
 
   private lazy val baseUserToken:Map[String,Any] = Map(
 	JwtToken.CLAIM_JWT_ID_KEY -> jti,
 	JwtToken.CLAIM_SUBJECT_KEY -> subject,
 	JwtToken.CLAIM_ISSUED_AT_KEY -> timestamp) 
-
-  def signToken(token:Map[String,Object]) = authTokenProvider.signToken(token)
-
-  private val csrfToken = authTokenProvider.generateCsrfToken()
 
   private def authToken = {
     val authTokenClaims:Map[String,Any] = Map(
@@ -34,8 +31,6 @@ class UserAuthTokenProvider(authTokenProvider:AuthTokenProvider, subject:String)
     (baseUserToken ++ refreshTokenClaims)
   }
 
-  def tokenSet = new TokenSet(csrfToken, authToken, refreshToken)
-
   private def tokenHasExpectedContents(token:String,tokenType:String):Boolean = {
     val expected = Map(
       JwtToken.CLAIM_TOKEN_TYPE_KEY -> tokenType,
@@ -46,9 +41,10 @@ class UserAuthTokenProvider(authTokenProvider:AuthTokenProvider, subject:String)
   def isValidAuthToken(token:String):Boolean = tokenHasExpectedContents(token, JwtToken.TOKEN_TYPE_AUTHENTICATION)
 
   def isValidRefreshToken(token:String):Boolean = tokenHasExpectedContents(token, JwtToken.TOKEN_TYPE_REFRESH)
+
+  def signToken(token:Map[String,Object]) = authTokenProvider.signToken(token)
+
+  val tokenSet = new TokenSet(csrfToken, authToken, refreshToken)
+
 }
-
-
-
-
 
