@@ -2,7 +2,7 @@
 
 This is a token-based authentication service using JWT (RFC 7519), using the jose4j JWT library. JWT is a much simpler, web-friendly and secure version of SAML (Security Assertion Markup Language). Check out www.jwt.io for more information
 
-The project implements a small, but useful, non-interoperable subset of OAuth2. The interoperability provided by OAuth2 makes it an overcomplicated protocol with a number of security pitfalls that need to be avoided. See www.oathsecurity.com for some examples.
+The project implements a small, but useful, non-interoperable subset of OAuth2. The interoperability provided by OAuth2 makes it an overcomplicated protocol with a number of security pitfalls that need to be avoided. See www.oauthsecurity.com for some examples.
 
 This implementation implements bearer tokens, refresh tokens, 2048 bit RSA-256 signatures and simple password authentication.
 
