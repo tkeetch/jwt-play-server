@@ -14,7 +14,7 @@ import scala.util.{Try,Success,Failure}
 
 import java.nio.charset.StandardCharsets
 
-object Jose4j {
+private[tokens] object Jose4j {
 
   def newRsaJsonWebKey(jwkJson:Option[String]):RsaJsonWebKey = {
     jwkJson match {
@@ -43,14 +43,6 @@ object Jose4j {
       claims.setClaim(k,v)
     }
     claims
-  }
-
-  def getBaseSubjectToken(subject:String):Map[String,Any] = {
-    val claims = new JwtClaims()
-    claims.setSubject(subject)
-    claims.setExpirationTimeMinutesInTheFuture(1)
-    claims.setIssuedAtToNow()
-    claimsToMap(claims)
   }
 
   def signToken(privateKey:RsaJsonWebKey, token:Map[String,Any]):String = {
